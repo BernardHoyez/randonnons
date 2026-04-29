@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Randonnons — Application Android de randonnée hors-ligne, cartes MBTiles, GPS continu, GPX/KML">
+  <title>Randonnons — Application de randonnée Android</title>
+  <style>
+    :root {
+      --green:       #1D7A4A;
+      --green-dark:  #145534;
+      --green-light: #4CAF78;
+      --orange:      #E8593C;
+      --bg:          #F5F7F3;
+      --surface:     #FFFFFF;
+      --text:        #1A1C1A;
+      --muted:       #6B7280;
+      --border:      #E2E8E0;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* ── Header ──────────────────────────────────────────────────────── */
+    header {
+      background: linear-gradient(140deg, var(--green-dark) 0%, var(--green) 60%, var(--green-light) 100%);
+      color: white; padding: 56px 24px 48px; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 60L30 0L60 60' fill='none' stroke='rgba(255,255,255,.06)' stroke-width='1'/%3E%3C/svg%3E") repeat;
+    }
+    header > * { position: relative; }
+    .app-icon { font-size: 4rem; margin-bottom: 12px; }
+    header h1 { font-size: 2.6rem; font-weight: 800; letter-spacing: -1px; }
+    header p  { margin-top: 10px; font-size: 1.15rem; opacity: 0.9; max-width: 520px; margin-inline: auto; }
+    .version-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      margin-top: 18px;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px; padding: 5px 16px;
+      font-size: 0.88rem; font-weight: 600;
+    }
+
+    /* ── Layout ──────────────────────────────────────────────────────── */
+    main { max-width: 720px; margin: 0 auto; padding: 36px 20px 60px; }
+
+    /* ── Download card ───────────────────────────────────────────────── */
+    .download-card {
+      background: var(--surface); border-radius: 20px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.09);
+      padding: 36px 28px; text-align: center;
+      margin-bottom: 32px;
+    }
+    .btn-download {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--orange); color: white;
+      font-size: 1.15rem; font-weight: 700;
+      padding: 18px 38px; border-radius: 14px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(232,89,60,.35);
+      transition: transform .15s, box-shadow .15s;
+    }
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(232,89,60,.45);
+    }
+    .dl-icon { font-size: 1.4rem; }
+    .dl-meta { margin-top: 14px; color: var(--muted); font-size: 0.88rem; }
+    .dl-meta code { background: var(--bg); border-radius: 4px; padding: 1px 6px; }
+
+    /* ── Warning install ─────────────────────────────────────────────── */
+    .warning {
+      background: #FFF8E1; border-left: 4px solid #F57C00;
+      border-radius: 10px; padding: 14px 18px;
+      font-size: 0.92rem; margin-bottom: 28px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+
+    /* ── Section cards ───────────────────────────────────────────────── */
+    .card {
+      background: var(--surface); border-radius: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.06);
+      padding: 24px 24px 20px; margin-bottom: 20px;
+    }
+    .card h2 {
+      font-size: 1.05rem; color: var(--green); font-weight: 700;
+      margin-bottom: 14px; padding-bottom: 10px;
+      border-bottom: 2px solid var(--bg);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 10px;
+    }
+    .feature-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 10px; border-radius: 10px; background: var(--bg);
+    }
+    .feature-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .feature-text strong { display: block; font-size: 0.9rem; }
+    .feature-text span   { font-size: 0.82rem; color: var(--muted); }
+
+    /* ── Changelog ───────────────────────────────────────────────────── */
+    .changelog-body {
+      background: var(--bg); border-radius: 10px;
+      padding: 16px; font-size: 0.88rem;
+      font-family: monospace; white-space: pre-wrap;
+      max-height: 240px; overflow-y: auto;
+      border: 1px solid var(--border);
+    }
+    .all-releases {
+      display: inline-block; margin-top: 12px;
+      color: var(--green); font-size: 0.88rem; font-weight: 600;
+      text-decoration: none;
+    }
+    .all-releases:hover { text-decoration: underline; }
+
+    /* ── Steps ───────────────────────────────────────────────────────── */
+    .steps { list-style: none; }
+    .steps li {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .steps li:last-child { border-bottom: none; }
+    .step-num {
+      background: var(--green); color: white;
+      border-radius: 50%; width: 26px; height: 26px;
+      flex-shrink: 0; display: flex; align-items: center;
+      justify-content: center; font-size: 0.8rem; font-weight: 700;
+    }
+    code { background: var(--bg); border-radius: 4px; padding: 1px 6px; font-family: monospace; }
+
+    /* ── Footer ──────────────────────────────────────────────────────── */
+    footer {
+      text-align: center; color: var(--muted); font-size: 0.82rem;
+      padding: 24px; border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+    footer a { color: var(--green); text-decoration: none; }
+
+    @media (max-width: 480px) {
+      header h1 { font-size: 2rem; }
+      .btn-download { font-size: 1rem; padding: 15px 24px; }
+      .features-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="app-icon">🥾</div>
+  <h1>Randonnons</h1>
+  <p>Application Android de randonnée — cartes hors-ligne, GPS continu, GPX &amp; KML</p>
+  <span class="version-badge">🏷 v1.0.0 · 28 avril 2026</span>
+</header>
+
+<main>
+
+  <!-- ── Téléchargement ────────────────────────────────────────────────── -->
+  <div class="download-card">
+    <a class="btn-download"
+       href="https://github.com/bernardhoyez/randonnons/releases/download/v1.0.0/randonnons-v1.0.0.apk"
+       download>
+      <span class="dl-icon">⬇</span>
+      Télécharger Randonnons v1.0.0
+    </a>
+    <p class="dl-meta">
+      Android 8.0+ (API 26) · ~8 Mo · ARM64 &amp; ARM
+      · <code>.apk</code> signé
+    </p>
+  </div>
+
+  <!-- ── Warning sources inconnues ─────────────────────────────────────── -->
+  <div class="warning">
+    <span>⚠</span>
+    <div>
+      Pour installer un APK hors du Play Store, activez
+      <strong>Sources inconnues</strong> dans
+      <em>Paramètres → Sécurité → Installer des apps inconnues</em>.
+    </div>
+  </div>
+
+  <!-- ── Fonctionnalités ───────────────────────────────────────────────── -->
+  <div class="card">
+    <h2>✨ Fonctionnalités</h2>
+    <div class="features-grid">
+      <div class="feature-item">
+        <span class="feature-icon">🗺</span>
+        <div class="feature-text">
+          <strong>Cartes hors-ligne MBTiles</strong>
+          <span>Compatible avec la PWA ign2mbt</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">📍</span>
+        <div class="feature-text">
+          <strong>GPS continu</strong>
+          <span>Enregistrement même écran éteint</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">📊</span>
+        <div class="feature-text">
+          <strong>Stats en temps réel</strong>
+          <span>Distance, durée, vitesse, D+/D-</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">📈</span>
+        <div class="feature-text">
+          <strong>Profil altimétrique</strong>
+          <span>Graphique interactif</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">🚩</span>
+        <div class="feature-text">
+          <strong>Waypoints</strong>
+          <span>Nom, description, photo</span>
+        </div>
+      </div>
+      <div class="feature-item">
+        <span class="feature-icon">📂</span>
+        <div class="feature-text">
+          <strong>Import / Export</strong>
+          <span>GPX et KML</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Changelog ────────────────────────────────────────────────────── -->
+  <div class="card">
+    <h2>📋 Nouveautés v1.0.0</h2>
+    <div class="changelog-body">Première version publique de Randonnons.
+
+• Enregistrement GPS continu via Foreground Service (écran éteint ✓)
+• Affichage carte hors-ligne depuis fichiers MBTiles (compatibles ign2mbt)
+• Stats en temps réel : distance, durée, vitesse, altitude, dénivelé +/-
+• Profil altimétrique interactif (MPAndroidChart)
+• Gestion des waypoints : ajout, édition, suppression
+• Import et export GPX et KML
+• Bibliothèque des traces et routes importées
+• Gestion des cartes MBTiles dans les réglages
+• Notification persistante pendant l'enregistrement</div>
+    <a class="all-releases"
+       href="https://github.com/bernardhoyez/randonnons/releases">
+      → Toutes les versions sur GitHub
+    </a>
+  </div>
+
+  <!-- ── Installation ─────────────────────────────────────────────────── -->
+  <div class="card">
+    <h2>📲 Installation</h2>
+    <ol class="steps">
+      <li>
+        <span class="step-num">1</span>
+        <span>Téléchargez l'APK avec le bouton ci-dessus</span>
+      </li>
+      <li>
+        <span class="step-num">2</span>
+        <span>Ouvrez le fichier <code>randonnons-v1.0.0.apk</code> sur votre Android</span>
+      </li>
+      <li>
+        <span class="step-num">3</span>
+        <span>Autorisez l'installation depuis cette source si demandé</span>
+      </li>
+      <li>
+        <span class="step-num">4</span>
+        <span>Lancez Randonnons et accordez les permissions GPS</span>
+      </li>
+      <li>
+        <span class="step-num">5</span>
+        <span>
+          Dans <strong>Réglages → Cartes hors-ligne</strong>, importez
+          vos fichiers <code>.mbtiles</code> générés par
+          <a href="https://bernardhoyez.github.io/appliz/" style="color:var(--green)">ign2mbt</a>
+        </span>
+      </li>
+    </ol>
+  </div>
+
+</main>
+
+<footer>
+  Randonnons · Open source ·
+  <a href="https://github.com/bernardhoyez/randonnons">Code source sur GitHub</a>
+  · <a href="https://bernardhoyez.github.io/appliz/">← Toutes les appliz</a>
+</footer>
+
+</body>
+</html>

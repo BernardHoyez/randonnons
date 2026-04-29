@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Randonnons</string>
+
+    <!-- Navigation -->
+    <string name="nav_carte">Carte</string>
+    <string name="nav_randonnee">Randonnée</string>
+    <string name="nav_waypoints">Waypoints</string>
+    <string name="nav_bibliotheque">Bibliothèque</string>
+    <string name="nav_reglages">Réglages</string>
+
+    <!-- GPS Service -->
+    <string name="notif_titre">Randonnons — Enregistrement actif</string>
+    <string name="notif_canal">Suivi GPS Randonnons</string>
+    <string name="notif_canal_desc">Notification active pendant l\'enregistrement d\'une randonnée</string>
+    <string name="action_arreter">Arrêter</string>
+
+    <!-- Stats -->
+    <string name="label_distance">Distance</string>
+    <string name="label_duree">Durée</string>
+    <string name="label_vitesse">Vitesse</string>
+    <string name="label_altitude">Altitude</string>
+    <string name="label_dp">Dénivelé +</string>
+    <string name="label_dn">Dénivelé -</string>
+
+    <!-- Boutons -->
+    <string name="btn_demarrer">Démarrer</string>
+    <string name="btn_pause">Pause</string>
+    <string name="btn_terminer">Terminer</string>
+    <string name="btn_waypoint">Waypoint</string>
+    <string name="btn_importer">Importer GPX / KML</string>
+    <string name="btn_export_gpx">GPX</string>
+    <string name="btn_export_kml">KML</string>
+    <string name="btn_supprimer">Supprimer</string>
+    <string name="btn_modifier">Modifier</string>
+    <string name="btn_ajouter_carte">+ Ajouter une carte MBTiles</string>
+
+    <!-- Messages -->
+    <string name="msg_import_ok">Fichier importé avec succès</string>
+    <string name="msg_import_erreur">Erreur d\'import : %1$s</string>
+    <string name="msg_export_ok">Export réussi</string>
+    <string name="msg_perm_gps">La localisation GPS est requise pour enregistrer une randonnée</string>
+    <string name="msg_supprimer_trace">Supprimer « %1$s » ? Cette action est irréversible.</string>
+
+    <!-- Préférences -->
+    <string name="pref_unites_metriques">Unités métriques</string>
+    <string name="pref_garder_ecran">Garder l\'écran allumé</string>
+
+    <!-- FileProvider authority -->
+    <string name="file_provider_authority" translatable="false">com.randonnons.fileprovider</string>
+</resources>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/nav_carte">
+
+    <fragment
+        android:id="@+id/nav_carte"
+        android:name="com.randonnons.ui.carte.CarteFragment"
+        android:label="Carte"/>
+
+    <fragment
+        android:id="@+id/nav_randonnee"
+        android:name="com.randonnons.ui.randonnee.RandonneeFragment"
+        android:label="Randonnée"/>
+
+    <fragment
+        android:id="@+id/nav_waypoints"
+        android:name="com.randonnons.ui.waypoints.WaypointsFragment"
+        android:label="Waypoints"/>
+
+    <fragment
+        android:id="@+id/nav_bibliotheque"
+        android:name="com.randonnons.ui.bibliotheque.BibliothequeFragment"
+        android:label="Bibliothèque"/>
+
+    <fragment
+        android:id="@+id/nav_reglages"
+        android:name="com.randonnons.ui.reglages.ReglagesFragment"
+        android:label="Réglages"/>
+
+</navigation>

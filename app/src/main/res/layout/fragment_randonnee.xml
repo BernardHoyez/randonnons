@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorSurface">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Statut GPS -->
+            <TextView
+                android:id="@+id/tv_precision"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GPS : ±0 m"
+                android:textSize="12sp"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                android:layout_gravity="end"/>
+
+            <!-- Grille stats principales -->
+            <androidx.gridlayout.widget.GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:columnCount="2"
+                app:rowCount="3">
+
+                <!-- Distance -->
+                <com.google.android.material.card.MaterialCardView
+                    app:layout_columnWeight="1"
+                    app:layout_rowWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:text="Distance"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                        <TextView android:id="@+id/tv_distance"
+                            android:text="0.00 km"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Durée -->
+                <com.google.android.material.card.MaterialCardView
+                    app:layout_columnWeight="1"
+                    app:layout_rowWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:text="Durée"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                        <TextView android:id="@+id/tv_duree"
+                            android:text="00:00:00"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Vitesse -->
+                <com.google.android.material.card.MaterialCardView
+                    app:layout_columnWeight="1"
+                    app:layout_rowWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:text="Vitesse"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                        <TextView android:id="@+id/tv_vitesse"
+                            android:text="0.0 km/h"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Altitude -->
+                <com.google.android.material.card.MaterialCardView
+                    app:layout_columnWeight="1"
+                    app:layout_rowWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:text="Altitude"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                        <TextView android:id="@+id/tv_altitude"
+                            android:text="0 m"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="?attr/colorPrimary"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- D+ -->
+                <com.google.android.material.card.MaterialCardView
+                    app:layout_columnWeight="1"
+                    app:layout_rowWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:text="Dénivelé +"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                        <TextView android:id="@+id/tv_dpositif"
+                            android:text="+0 m"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/green_700"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- D- -->
+                <com.google.android.material.card.MaterialCardView
+                    app:layout_columnWeight="1"
+                    app:layout_rowWeight="1"
+                    android:layout_margin="4dp"
+                    app:cardCornerRadius="12dp">
+                    <LinearLayout android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView android:text="Dénivelé -"
+                            android:textSize="12sp"
+                            android:textColor="?attr/colorOnSurfaceVariant"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                        <TextView android:id="@+id/tv_dnegatif"
+                            android:text="-0 m"
+                            android:textSize="28sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/red_600"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </androidx.gridlayout.widget.GridLayout>
+
+            <!-- Graphique altimétrique -->
+            <com.github.mikephil.charting.charts.LineChart
+                android:id="@+id/chart_altitude"
+                android:layout_width="match_parent"
+                android:layout_height="160dp"
+                android:layout_marginTop="16dp"/>
+
+            <!-- Boutons contrôle -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="20dp"
+                android:gravity="center">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_waypoint"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📍 Waypoint"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_marginEnd="12dp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_demarrer"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Démarrer"
+                    android:textSize="16sp"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_terminer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⏹ Terminer"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:enabled="false"
+                    android:alpha="0.4"
+                    android:layout_marginStart="12dp"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Exports GPX / KML -->
+    <external-files-path name="exports_gpx" path="exports/gpx/"/>
+    <external-files-path name="exports_kml" path="exports/kml/"/>
+    <!-- Cartes MBTiles -->
+    <external-files-path name="mbtiles"     path="mbtiles/"/>
+    <!-- Fichiers temporaires -->
+    <cache-path name="cache"                path="."/>
+</paths>

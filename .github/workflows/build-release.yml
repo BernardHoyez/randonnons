@@ -1,0 +1,288 @@
+name: Build & Release Randonnons APK
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags:
+      - 'v*'           # Ex : v1.0.0 → déclenche une GitHub Release
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # Déclenchement manuel depuis l'interface GitHub
+
+# ── Permissions ───────────────────────────────────────────────────────────────
+permissions:
+  contents: write      # Nécessaire pour créer des Releases
+
+jobs:
+
+  # ════════════════════════════════════════════════════════════════════════════
+  #  BUILD
+  # ════════════════════════════════════════════════════════════════════════════
+  build:
+    name: Compile APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout du code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 2. JDK 17 (requis par Android Gradle Plugin 8.x)
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # 3. Android SDK (outils de build)
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      # 4. Cache Gradle
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
+
+      # 5. Permission d'exécution sur gradlew
+      - name: Grant execute permission for gradlew
+        run: |
+          if [ ! -f gradlew ]; then
+            echo "gradlew absent — copie depuis gradle wrapper système"
+            cp /usr/share/java/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar || true
+            printf '#!/bin/sh\nexec java -classpath "$0/../gradle/wrapper/gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain "$@"\n' > gradlew
+          fi
+          chmod +x gradlew
+
+      # 6. Build APK debug (tous les push / PR)
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon
+
+      # 7. Upload de l'APK debug comme artefact CI
+      - name: Upload Debug APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: randonnons-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          retention-days: 14
+
+      # ── Release : seulement sur tag v* ──────────────────────────────────────
+      # 8. Décoder le keystore depuis les Secrets GitHub
+      - name: Decode release keystore
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > /tmp/randonnons.jks
+
+      # 9. Build APK release signé
+      - name: Build Release APK (signed)
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          KEYSTORE_PATH:      /tmp/randonnons.jks
+          KEY_ALIAS:          ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD:       ${{ secrets.KEY_PASSWORD }}
+          STORE_PASSWORD:     ${{ secrets.STORE_PASSWORD }}
+        run: |
+          ./gradlew assembleRelease \
+            -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
+            -Pandroid.injected.signing.store.password=$STORE_PASSWORD \
+            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
+            -Pandroid.injected.signing.key.password=$KEY_PASSWORD \
+            --no-daemon
+
+      # 10. Renommer l'APK avec le numéro de version du tag
+      - name: Rename release APK
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          cp app/build/outputs/apk/release/app-release.apk \
+             app/build/outputs/apk/release/randonnons-${VERSION}.apk
+
+      # 11. Créer la GitHub Release et uploader l'APK
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Randonnons ${{ github.ref_name }}"
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+          files: |
+            app/build/outputs/apk/release/randonnons-${{ github.ref_name }}.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 12. Upload APK release comme artefact CI aussi
+      - name: Upload Release APK artifact
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: actions/upload-artifact@v4
+        with:
+          name: randonnons-release-${{ github.ref_name }}
+          path: app/build/outputs/apk/release/randonnons-${{ github.ref_name }}.apk
+          retention-days: 90
+
+  # ════════════════════════════════════════════════════════════════════════════
+  #  DEPLOY PAGE GITHUB PAGES (seulement après une Release)
+  # ════════════════════════════════════════════════════════════════════════════
+  deploy-page:
+    name: Update appliz/randonnons page
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout appliz repo (GitHub Pages)
+        uses: actions/checkout@v4
+        with:
+          repository: bernardhoyez/bernardhoyez.github.io
+          token: ${{ secrets.GH_PAGES_TOKEN }}
+          path: pages-repo
+
+      - name: Generate download page
+        env:
+          VERSION: ${{ github.ref_name }}
+          REPO:    ${{ github.repository }}
+        run: |
+          mkdir -p pages-repo/appliz/randonnons
+          APK_URL="https://github.com/${REPO}/releases/download/${VERSION}/randonnons-${VERSION}.apk"
+          DATE=$(date +'%d/%m/%Y')
+
+          # Extraire le changelog de la dernière version depuis CHANGELOG.md
+          CHANGELOG=$(sed -n "/^## \[${VERSION}\]/,/^## \[/p" CHANGELOG.md 2>/dev/null \
+                      | head -n -1 | tail -n +2 || echo "Voir le changelog complet sur GitHub.")
+
+          cat > pages-repo/appliz/randonnons/index.html << HTMLEOF
+          <!DOCTYPE html>
+          <html lang="fr">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Randonnons — Application Android de randonnée</title>
+            <style>
+              :root {
+                --green: #1D7A4A; --green-dark: #145534; --orange: #E8593C;
+                --bg: #F5F7F3; --surface: #fff; --text: #1A1C1A; --muted: #6B7280;
+              }
+              * { box-sizing: border-box; margin: 0; padding: 0; }
+              body { font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); }
+              header {
+                background: linear-gradient(135deg, var(--green-dark), var(--green));
+                color: white; padding: 48px 24px; text-align: center;
+              }
+              header h1 { font-size: 2.4rem; font-weight: 800; letter-spacing: -0.5px; }
+              header p  { margin-top: 10px; font-size: 1.1rem; opacity: 0.88; }
+              .badge {
+                display: inline-block; margin-top: 16px;
+                background: rgba(255,255,255,0.15); border-radius: 20px;
+                padding: 4px 14px; font-size: 0.85rem;
+              }
+              main { max-width: 680px; margin: 0 auto; padding: 32px 20px; }
+              .download-card {
+                background: var(--surface); border-radius: 16px;
+                box-shadow: 0 2px 12px rgba(0,0,0,.08);
+                padding: 28px; text-align: center; margin-bottom: 28px;
+              }
+              .btn-download {
+                display: inline-flex; align-items: center; gap: 10px;
+                background: var(--orange); color: white;
+                font-size: 1.1rem; font-weight: 700;
+                padding: 16px 32px; border-radius: 12px;
+                text-decoration: none; transition: opacity .2s;
+              }
+              .btn-download:hover { opacity: .88; }
+              .meta { margin-top: 14px; color: var(--muted); font-size: 0.88rem; }
+              .section { background: var(--surface); border-radius: 16px;
+                box-shadow: 0 2px 12px rgba(0,0,0,.06);
+                padding: 24px; margin-bottom: 24px; }
+              .section h2 { font-size: 1.1rem; color: var(--green); margin-bottom: 14px;
+                border-bottom: 2px solid var(--bg); padding-bottom: 8px; }
+              ul { padding-left: 20px; }
+              li { margin-bottom: 6px; line-height: 1.55; }
+              .changelog pre { background: var(--bg); border-radius: 8px;
+                padding: 14px; font-size: 0.85rem; white-space: pre-wrap;
+                font-family: monospace; }
+              .warning { background: #FFF8E1; border-left: 4px solid #F57C00;
+                border-radius: 8px; padding: 14px 18px; font-size: 0.9rem;
+                margin-bottom: 24px; }
+              footer { text-align: center; color: var(--muted); font-size: 0.8rem;
+                padding: 24px; }
+            </style>
+          </head>
+          <body>
+            <header>
+              <h1>🥾 Randonnons</h1>
+              <p>Application Android de randonnée hors-ligne</p>
+              <span class="badge">Version ${VERSION} · ${DATE}</span>
+            </header>
+
+            <main>
+              <div class="download-card">
+                <a class="btn-download" href="${APK_URL}" download>
+                  ⬇ Télécharger l'APK ${VERSION}
+                </a>
+                <p class="meta">Android 8.0+ · Cartes MBTiles · GPS continu · GPX / KML</p>
+              </div>
+
+              <div class="warning">
+                ⚠ Pour installer un APK hors Play Store, activez <strong>Sources inconnues</strong>
+                dans Paramètres → Sécurité de votre Android.
+              </div>
+
+              <div class="section">
+                <h2>Fonctionnalités</h2>
+                <ul>
+                  <li>🗺 Cartes hors-ligne au format MBTiles (compatibles <strong>ign2mbt</strong>)</li>
+                  <li>📍 Enregistrement GPS continu, même écran éteint</li>
+                  <li>📊 Stats en temps réel : distance, durée, vitesse, dénivelé</li>
+                  <li>📈 Profil altimétrique interactif</li>
+                  <li>🚩 Gestion des waypoints (nom, description, photo)</li>
+                  <li>📂 Import / Export GPX et KML</li>
+                  <li>📚 Bibliothèque des traces et routes</li>
+                </ul>
+              </div>
+
+              <div class="section changelog">
+                <h2>Nouveautés ${VERSION}</h2>
+                <pre>${CHANGELOG}</pre>
+                <p style="margin-top:10px;font-size:.85rem">
+                  <a href="https://github.com/${REPO}/releases" style="color:var(--green)">
+                    → Toutes les versions
+                  </a>
+                </p>
+              </div>
+
+              <div class="section">
+                <h2>Installation</h2>
+                <ul>
+                  <li>1. Téléchargez l'APK ci-dessus</li>
+                  <li>2. Ouvrez le fichier sur votre Android</li>
+                  <li>3. Autorisez l'installation depuis cette source</li>
+                  <li>4. Importez vos fichiers <code>.mbtiles</code> depuis <strong>Réglages → Cartes</strong></li>
+                </ul>
+              </div>
+            </main>
+
+            <footer>
+              Randonnons · Code source sur
+              <a href="https://github.com/${REPO}" style="color:var(--green)">GitHub</a>
+            </footer>
+          </body>
+          </html>
+          HTMLEOF
+          echo "Page générée pour ${VERSION}"
+
+      - name: Commit and push to GitHub Pages
+        working-directory: pages-repo
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add appliz/randonnons/index.html
+          git diff --cached --quiet || \
+            git commit -m "🥾 Randonnons ${GITHUB_REF_NAME} — mise à jour page téléchargement"
+          git push

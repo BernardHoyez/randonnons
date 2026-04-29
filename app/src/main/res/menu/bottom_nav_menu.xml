@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/nav_carte"
+        android:icon="@drawable/ic_map"
+        android:title="Carte"/>
+
+    <item
+        android:id="@+id/nav_randonnee"
+        android:icon="@drawable/ic_hiking"
+        android:title="Randonnée"/>
+
+    <item
+        android:id="@+id/nav_waypoints"
+        android:icon="@drawable/ic_add_location"
+        android:title="Waypoints"/>
+
+    <item
+        android:id="@+id/nav_bibliotheque"
+        android:icon="@drawable/ic_library"
+        android:title="Bibliothèque"/>
+
+    <item
+        android:id="@+id/nav_reglages"
+        android:icon="@drawable/ic_settings"
+        android:title="Réglages"/>
+
+</menu>

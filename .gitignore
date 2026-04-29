@@ -1,0 +1,25 @@
+# Android
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Keystore (NE JAMAIS committer !)
+*.jks
+*.keystore
+
+# Gradle
+.idea/gradle.xml
+.idea/workspace.xml
+
+# OS
+Thumbs.db
