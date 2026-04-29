@@ -51,19 +51,15 @@ jobs:
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
           restore-keys: ${{ runner.os }}-gradle-
 
-      # 5. Permission d'exécution sur gradlew
-      - name: Grant execute permission for gradlew
-        run: |
-          if [ ! -f gradlew ]; then
-            echo "gradlew absent — copie depuis gradle wrapper système"
-            cp /usr/share/java/gradle-wrapper.jar gradle/wrapper/gradle-wrapper.jar || true
-            printf '#!/bin/sh\nexec java -classpath "$0/../gradle/wrapper/gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain "$@"\n' > gradlew
-          fi
-          chmod +x gradlew
+      # 5. Installer Gradle 8.2 directement
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.2'
 
-      # 6. Build APK debug (tous les push / PR)
+      # 6. Build APK debug
       - name: Build Debug APK
-        run: ./gradlew assembleDebug --no-daemon
+        run: gradle assembleDebug --no-daemon
 
       # 7. Upload de l'APK debug comme artefact CI
       - name: Upload Debug APK artifact
@@ -89,7 +85,7 @@ jobs:
           KEY_PASSWORD:       ${{ secrets.KEY_PASSWORD }}
           STORE_PASSWORD:     ${{ secrets.STORE_PASSWORD }}
         run: |
-          ./gradlew assembleRelease \
+          gradle assembleRelease \
             -Pandroid.injected.signing.store.file=$KEYSTORE_PATH \
             -Pandroid.injected.signing.store.password=$STORE_PASSWORD \
             -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
